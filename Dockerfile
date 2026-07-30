@@ -14,6 +14,11 @@ ENV UV_COMPILE_BYTECODE=1 \
     UV_NO_CACHE=1 \
     HF_HOME=/app/.cache/huggingface
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY pyproject.toml uv.lock ./
 
 RUN uv sync \
@@ -21,8 +26,8 @@ RUN uv sync \
     --no-dev \
     --no-install-project
 
-# Cache the embedding model in the image so runtime startup does not depend on
-# a Hugging Face network request.
+# Download the embedding model during the image build so production startup
+# does not depend on a Hugging Face network request.
 RUN .venv/bin/python -c \
     "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 
@@ -37,11 +42,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PORT=10000 \
     HF_HOME=/app/.cache/huggingface
 
-COPY --from=builder /app/.venv /app/.venv
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder \
-    /app/.cache/huggingface \
-    /app/.cache/huggingface
+COPY --from=builder /app/.venv /app/.venv
+COPY --from=builder /app/.cache/huggingface /app/.cache/huggingface
 
 COPY app/ ./app/
 COPY models/ ./models/
@@ -62,8 +69,4 @@ USER scholargraph
 
 EXPOSE 10000
 
-CMD [
-    "sh",
-    "-c",
-    "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"
-]
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
