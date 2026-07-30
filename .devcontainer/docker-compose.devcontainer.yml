@@ -18,5 +18,3 @@ services:
       ENVIRONMENT: development
       UV_CACHE_DIR: /tmp/uv-cache
       UV_LINK_MODE: copy
-    tmpfs:
-      - /tmp:exec,mode=1777
