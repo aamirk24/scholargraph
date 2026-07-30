@@ -19,8 +19,16 @@
     "8000": {
       "label": "ScholarGraph API",
       "protocol": "http",
-      "onAutoForward": "openBrowserOnce"
+      "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "ignore"
     }
+  },
+
+  "otherPortsAttributes": {
+    "onAutoForward": "silent"
   },
 
   "postCreateCommand": "bash scripts/post-create.sh",
