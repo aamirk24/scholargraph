@@ -1,0 +1,22 @@
+services:
+  workspace:
+    build:
+      context: .devcontainer
+      dockerfile: Dockerfile
+    command: sleep infinity
+    volumes:
+      - .:/workspaces/WebServices:cached
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://sguser:password@db:5432/scholargraph
+      TEST_DATABASE_URL: postgresql+asyncpg://sguser:password@db:5432/scholargraph_test
+      SECRET_KEY: codespaces-development-secret-key-not-for-production
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+      ENVIRONMENT: development
+      UV_CACHE_DIR: /tmp/uv-cache
+      UV_LINK_MODE: copy
+    tmpfs:
+      - /tmp:exec,mode=1777

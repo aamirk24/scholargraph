@@ -1,30 +1,30 @@
+.git
+.github
+.devcontainer
+
 .env
 .env.*
 !.env.example
 
-.git
-.gitignore
-
 .venv
+
 .pytest_cache
+.ruff_cache
+.mypy_cache
+
 __pycache__
 **/__pycache__
+*.py[cod]
 
-tests
-docs
-
-.mypy_cache
-.ruff_cache
 .coverage
 htmlcov
 
-.DS_Store
-*.pyc
-*.pyo
-*.pyd
+tests
+
+API_Documentation.pdf
+README.md
 
 mcp_server
+
 cleanup_seed_data.py
 seed_data.py
-
-README.md

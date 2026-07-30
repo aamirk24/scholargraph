@@ -1,0 +1,50 @@
+{
+  "name": "ScholarGraph",
+  "dockerComposeFile": [
+    "../compose.yaml",
+    "docker-compose.devcontainer.yml"
+  ],
+  "service": "workspace",
+  "workspaceFolder": "/workspaces/WebServices",
+  "shutdownAction": "stopCompose",
+  "forwardPorts": [8000, 5432],
+  "portsAttributes": {
+    "8000": {
+      "label": "ScholarGraph API",
+      "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
+    }
+  },
+  "containerEnv": {
+    "DATABASE_URL": "postgresql+asyncpg://sguser:password@db:5432/scholargraph",
+    "TEST_DATABASE_URL": "postgresql+asyncpg://sguser:password@db:5432/scholargraph_test",
+    "SECRET_KEY": "codespaces-development-secret-key-not-for-production",
+    "ALGORITHM": "HS256",
+    "ACCESS_TOKEN_EXPIRE_MINUTES": "30",
+    "ENVIRONMENT": "development",
+    "UV_CACHE_DIR": "/tmp/uv-cache",
+    "UV_LINK_MODE": "copy"
+  },
+  "postCreateCommand": "bash scripts/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/workspaces/WebServices/.venv/bin/python",
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": [
+          "tests"
+        ]
+      }
+    }
+  }
+}

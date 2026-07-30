@@ -3,6 +3,7 @@
 ![CI](https://github.com/aamirk24/WebServices/actions/workflows/ci.yml/badge.svg)
 
 [📄 API Documentation (PDF)](./API_Documentation.pdf)
+
 ---
 
 ## Table of Contents
@@ -23,13 +24,24 @@
 
 ## Project Overview
 
-**ScholarGraph** is a backend API for exploring a corpus of academic research papers in a more intelligent and research-friendly way than simple keyword search. It combines traditional paper metadata retrieval, semantic search using vector embeddings, citation-graph analytics using PageRank, author impact summaries, user-authenticated annotations, API-key based tooling access, and MCP server integration for AI-assisted workflows.
+**ScholarGraph** is a backend API for exploring a corpus of academic research
+papers in a more intelligent and research-friendly way than simple keyword
+search.
 
-The system ingests and enriches research data from **arXiv** and **Semantic Scholar**. arXiv provides the paper corpus and metadata, while Semantic Scholar is used as a key citation source for building and enriching the citation graph. This allows ScholarGraph to move beyond “paper storage” into actual research discovery: users can browse papers, inspect citation structure, retrieve authors, annotate interesting papers, trigger corpus maintenance jobs, and expose high-value research actions to LLM clients through MCP.
+It combines traditional paper metadata retrieval, semantic search using vector
+embeddings, citation-graph analytics using PageRank, author impact summaries,
+user-authenticated annotations, API-key based tooling access, and MCP server
+integration for AI-assisted workflows.
+
+The system ingests and enriches research data from **arXiv** and
+**Semantic Scholar**. arXiv provides the paper corpus and metadata, while
+Semantic Scholar is used as a citation source for building and enriching the
+citation graph.
 
 ### Core capabilities
 
 #### Paper Discovery
+
 - List papers with pagination
 - Filter papers by category
 - Retrieve full paper metadata
@@ -39,28 +51,32 @@ The system ingests and enriches research data from **arXiv** and **Semantic Scho
 - Find papers similar to an existing paper
 
 #### Research Analytics
-- Rank papers by **PageRank** over the citation graph
-- Analyse topic/category statistics
+
+- Rank papers by PageRank over the citation graph
+- Analyse topic and category statistics
 - View publication trends over time
 - Summarise author impact and top papers
 
 #### User Functionality
+
 - User registration and JWT login
-- Access token refresh
-- API key generation and revocation
-- Paper annotations with owner-controlled editing/deletion
+- Access-token refresh
+- API-key generation and revocation
+- Paper annotations with owner-controlled editing and deletion
 
 #### Corpus Maintenance
+
 - Crawl topic-specific papers
 - Seed foundational missing papers
 - Build citation graph edges for one topic or the full corpus
 - Trigger background embedding generation
 - Trigger background PageRank recomputation
 
-#### AI / Tool Integration
+#### AI and Tool Integration
+
 - MCP server support
 - API-key based external tool access
-- Natural-language paper discovery workflows for desktop AI clients
+- Natural-language paper-discovery workflows for AI clients
 
 ---
 
@@ -96,7 +112,7 @@ The system ingests and enriches research data from **arXiv** and **Semantic Scho
 │────────────────────────────│      │────────────────────────────────────────│
 │ SQLAlchemy async queries   │      │ auth / JWT / API keys                  │
 │ papers / authors / cites   │      │ embeddings / semantic search           │
-│ users / annotations        │      │ pagerank / crawler / background jobs   │
+│ users / annotations        │      │ PageRank / crawler / background jobs   │
 └───────────────┬────────────┘      └──────────────────────┬─────────────────┘
                 │                                          │
                 └───────────────────┬──────────────────────┘
@@ -114,100 +130,141 @@ The system ingests and enriches research data from **arXiv** and **Semantic Scho
 │─────────────────────────────────────────────────────────────────────────────│
 │ arXiv API / Semantic Scholar API / background corpus enrichment             │
 └─────────────────────────────────────────────────────────────────────────────┘
-
-
-Optional AI Layer
-──────────────────────────────────────────────────────────────────────────────
-mcp_server/server.py runs as a separate stdio process and calls the FastAPI
-API over HTTP using a ScholarGraph API key.
 ```
+
+The optional MCP server runs as a separate process and calls the FastAPI API
+over HTTP using a ScholarGraph API key.
 
 ---
 
 ## Quick Start
 
-### Prerequisites
+### GitHub Codespaces
 
-Before starting, make sure you have:
+Open the repository in GitHub Codespaces.
 
-- **Python 3.12+**
-- **PostgreSQL**
-- **pgvector** available in PostgreSQL
-- **uv** installed
+The committed devcontainer automatically:
 
-### To install pgvector run
+- installs Python 3.12;
+- installs `uv`;
+- installs PostgreSQL client tools including `psql`;
+- starts PostgreSQL 16 with pgvector;
+- creates `scholargraph`;
+- creates `scholargraph_test`;
+- enables the `vector` extension in both databases;
+- installs the locked Python dependencies;
+- uses CPU-only PyTorch;
+- runs the application database migrations.
+
+After the Codespace finishes building, start the API:
+
 ```bash
-git clone --branch v0.8.2 https://github.com/pgvector/pgvector.git
-cd pgvector
-make
-sudo make install
+make dev
 ```
 
-### To install uv run
+Run the tests:
 
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
+make test
 ```
 
-### Get running from scratch
+### Local Development with Docker
+
+Requirements:
+
+- Docker
+- Docker Compose
+- Python 3.12 or later
+- `uv`
+
+Clone the project:
 
 ```bash
 git clone https://github.com/aamirk24/WebServices.git
 cd WebServices
-cp .env.example .env
-psql postgres -c "CREATE USER sguser WITH PASSWORD 'yourpassword';"
-psql postgres -c "CREATE DATABASE scholargraph OWNER sguser;"
-psql scholargraph -c "CREATE EXTENSION IF NOT EXISTS vector;"
-uv sync
-uv add "psycopg[binary]"
-uv run alembic upgrade head
-uv run uvicorn app.main:app --reload
 ```
 
-Before running ```bash uv run alembic upgrade head``` make sure to set the environment variables accordingly.
+Create the local environment file:
 
-### After startup
+```bash
+cp .env.example .env
+```
 
-- **API Base URL:** `http://127.0.0.1:8000`
-- **Swagger UI:** `http://127.0.0.1:8000/docs`
-- **OpenAPI JSON:** `http://127.0.0.1:8000/openapi.json`
+Install dependencies, start PostgreSQL and run migrations:
+
+```bash
+make setup
+```
+
+Start the API:
+
+```bash
+make dev
+```
+
+The API will be available at:
+
+```text
+http://127.0.0.1:8000
+```
+
+Swagger UI:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+PostgreSQL and pgvector do not need to be manually installed on the host
+machine.
 
 ---
 
 ## Environment Variables
 
-Create a `.env` file in the project root.
+Codespaces supplies local development variables automatically.
 
-### Minimal local `.env`
+For manual local development:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Required | Purpose |
+|---|---:|---|
+| `DATABASE_URL` | Yes | Application PostgreSQL URL |
+| `TEST_DATABASE_URL` | Tests | Dedicated test database URL |
+| `SECRET_KEY` | Yes | JWT signing secret |
+| `ALGORITHM` | No | JWT algorithm; defaults to `HS256` |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | No | Access-token lifetime |
+| `ENVIRONMENT` | Recommended | `development`, `test`, or `production` |
+| `ALLOWED_ORIGINS` | Production | JSON array or comma-separated CORS origins |
+| `SCHOLARGRAPH_API_KEY` | MCP only | API key used by the MCP server |
+
+Supported application database URL formats include:
+
+```text
+postgresql+asyncpg://...
+postgresql+psycopg://...
+postgresql://...
+postgres://...
+```
+
+Plain Render-style `postgresql://` and `postgres://` URLs are normalised to
+use `asyncpg`.
+
+Example:
 
 ```env
-DATABASE_URL=postgresql+asyncpg://sguser:yourpassword@localhost:5432/scholargraph
-SECRET_KEY=replace_this_with_a_long_random_secret
+DATABASE_URL=postgresql+asyncpg://sguser:password@localhost:5432/scholargraph
+TEST_DATABASE_URL=postgresql+asyncpg://sguser:password@localhost:5432/scholargraph_test
+SECRET_KEY=replace-with-a-long-random-secret
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ENVIRONMENT=development
 ```
 
-### Production / deployment notes
-
-In production, you will typically also set:
-
-```env
-ALLOWED_ORIGINS=["https://your-deployed-site.onrender.com"]
-CRAWL_ADMIN_EMAILS=your-email@example.com
-```
-
-### Environment Variables Table
-
-| Variable | Required | Purpose |
-|---|---:|---|
-| `DATABASE_URL` | Yes | Async PostgreSQL connection string using `postgresql+asyncpg://...` |
-| `SECRET_KEY` | Yes | JWT signing secret |
-| `ALGORITHM` | Yes | JWT algorithm, typically `HS256` |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Yes | Access token lifespan |
-| `ENVIRONMENT` | Recommended | `development` or `production` |
-| `ALLOWED_ORIGINS` | Production | JSON list of allowed CORS origins |
-| `SCHOLARGRAPH_API_KEY` | MCP only | API key used by the MCP server |
+Never point `TEST_DATABASE_URL` at the development or production database. The
+test suite performs destructive table cleanup.
 
 ---
 
@@ -215,62 +272,62 @@ CRAWL_ADMIN_EMAILS=your-email@example.com
 
 ### Authentication
 
-| Method | Endpoint | Auth Reqd | Description |
+| Method | Endpoint | Authentication | Description |
 |---|---|---|---|
-| POST | `/auth/register` | No | Register a new user account |
-| POST | `/auth/login` | No | Log in and receive access + refresh tokens |
-| POST | `/auth/refresh` | No | Refresh an access token using a refresh token |
-| GET | `/auth/me` | Yes | Return the currently authenticated user |
-| POST | `/auth/api-keys` | Yes | Create a new API key |
-| GET | `/auth/api-keys` | Yes | List API keys belonging to the authenticated user |
-| DELETE | `/auth/api-keys/{api_key_id}` | Yes | Revoke one API key |
+| POST | `/auth/register` | No | Register a user |
+| POST | `/auth/login` | No | Receive access and refresh tokens |
+| POST | `/auth/refresh` | No | Refresh an access token |
+| GET | `/auth/me` | Yes | Return the authenticated user |
+| POST | `/auth/api-keys` | Yes | Create an API key |
+| GET | `/auth/api-keys` | Yes | List the user's API keys |
+| DELETE | `/auth/api-keys/{api_key_id}` | Yes | Revoke an API key |
 
 ### Papers
 
-| Method | Endpoint | Auth Reqd | Description |
+| Method | Endpoint | Authentication | Description |
 |---|---|---|---|
-| GET | `/papers` | No | List papers with pagination and optional category / search filters |
-| GET | `/papers/ranked` | No | Return top papers ranked by PageRank |
-| GET | `/papers/search/semantic` | No | Run semantic search over abstract embeddings |
-| GET | `/papers/{paper_id}` | No | Return one paper by internal UUID |
-| GET | `/papers/{paper_id}/similar` | No | Return papers semantically similar to the source paper |
-| GET | `/papers/{paper_id}/citations` | No | Return citation relationships for a paper |
-| GET | `/papers/{paper_id}/authors` | No | Return authors associated with a paper |
+| GET | `/papers` | No | List and filter papers |
+| GET | `/papers/ranked` | No | Return papers ranked by PageRank |
+| GET | `/papers/search/semantic` | No | Search abstract embeddings |
+| GET | `/papers/{paper_id}` | No | Return one paper |
+| GET | `/papers/{paper_id}/similar` | No | Return similar papers |
+| GET | `/papers/{paper_id}/citations` | No | Return citation relationships |
+| GET | `/papers/{paper_id}/authors` | No | Return paper authors |
 
 ### Authors
 
-| Method | Endpoint | Auth Reqd | Description |
+| Method | Endpoint | Authentication | Description |
 |---|---|---|---|
 | GET | `/authors` | No | List authors with aggregate metrics |
-| GET | `/authors/{author_id}` | No | Return one author and their associated papers |
-| GET | `/authors/{author_id}/impact` | No | Return author impact analytics |
+| GET | `/authors/{author_id}` | No | Return one author and their papers |
+| GET | `/authors/{author_id}/impact` | No | Return author-impact analytics |
 
 ### Annotations
 
-| Method | Endpoint | Auth Reqd | Description |
+| Method | Endpoint | Authentication | Description |
 |---|---|---|---|
-| POST | `/papers/{paper_id}/annotations` | Yes | Create an annotation on a paper |
-| GET | `/papers/{paper_id}/annotations` | No | List annotations for a paper |
-| PUT | `/annotations/{annotation_id}` | Yes (owner) | Update an annotation |
-| DELETE | `/annotations/{annotation_id}` | Yes (owner) | Delete an annotation |
+| POST | `/papers/{paper_id}/annotations` | Yes | Create an annotation |
+| GET | `/papers/{paper_id}/annotations` | No | List annotations |
+| PUT | `/annotations/{annotation_id}` | Owner | Update an annotation |
+| DELETE | `/annotations/{annotation_id}` | Owner | Delete an annotation |
 
 ### Analytics
 
-| Method | Endpoint | Auth Reqd | Description |
+| Method | Endpoint | Authentication | Description |
 |---|---|---|---|
-| POST | `/analytics/pagerank` | Yes (admin) | Trigger background PageRank recomputation |
-| GET | `/analytics/topics` | No | Return topic/category analytics |
-| GET | `/analytics/trend` | No | Return publication trends over time |
-| POST | `/analytics/embed-papers` | Yes (admin) | Trigger background embedding generation |
+| POST | `/analytics/pagerank` | Admin | Trigger PageRank |
+| GET | `/analytics/topics` | No | Return topic analytics |
+| GET | `/analytics/trend` | No | Return publication trends |
+| POST | `/analytics/embed-papers` | Admin | Trigger embedding generation |
 
-### Crawl / Corpus Maintenance
+### Corpus Maintenance
 
-| Method | Endpoint | Auth Reqd | Description |
+| Method | Endpoint | Authentication | Description |
 |---|---|---|---|
-| POST | `/crawl` | Yes (admin) | Start a background crawl for an arXiv topic |
-| POST | `/crawl/seed-foundations` | Yes | Seed missing foundational papers |
-| POST | `/crawl/build-graph` | Yes | Build graph edges for one topic |
-| POST | `/crawl/build-graph-all` | Yes | Build graph edges across the full corpus |
+| POST | `/crawl` | Admin | Start a topic crawl |
+| POST | `/crawl/seed-foundations` | Yes | Seed foundational papers |
+| POST | `/crawl/build-graph` | Yes | Build one topic graph |
+| POST | `/crawl/build-graph-all` | Yes | Build the full graph |
 
 ---
 
@@ -299,181 +356,202 @@ curl -X POST http://127.0.0.1:8000/auth/login \
 ### Semantic Search
 
 ```bash
-curl "http://127.0.0.1:8000/papers/search/semantic?q=transformer attention mechanism&limit=5"
+curl \
+  "http://127.0.0.1:8000/papers/search/semantic?q=transformer%20attention&limit=5"
 ```
 
 ### Ranked Papers
 
 ```bash
-curl "http://127.0.0.1:8000/papers/ranked?category=cs.AI&limit=10"
-```
-
-### Trigger PageRank
-
-```bash
-curl -X POST http://127.0.0.1:8000/analytics/pagerank \
-  -H "Authorization: Bearer <ACCESS_TOKEN>"
+curl \
+  "http://127.0.0.1:8000/papers/ranked?category=cs.AI&limit=10"
 ```
 
 ---
 
 ## MCP Server Setup
 
-ScholarGraph supports an **MCP-compatible server layer** so AI clients can use the system as a tool-based backend rather than only through manual REST calls.
-
-### MCP Purpose
-
-The MCP server is intended to expose high-value research operations such as:
-
-- semantic paper search
-- retrieving top ranked papers
-- looking up paper details
-- finding similar papers
-- summarising author impact
-
-### 1. Create an API key
+Create an API key:
 
 ```bash
 curl -X POST http://127.0.0.1:8000/auth/api-keys \
   -H "Authorization: Bearer <ACCESS_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "key_name",
+    "name": "mcp-client",
     "scopes": ["papers:read", "analytics:read"]
   }'
 ```
 
-> Save the raw API key immediately. It is only returned once.
-
-### 2. Export the key locally
+Store the key:
 
 ```bash
-export SCHOLARGRAPH_API_KEY="paste_your_raw_key_here"
+export SCHOLARGRAPH_API_KEY="your-raw-api-key"
 ```
 
-### 3. Run the MCP server
+Run the MCP server:
 
 ```bash
 uv run python mcp_server/server.py
 ```
 
-### 4. Claude Desktop example config
-
-Edit claude_desktop_config.json
+Example Claude Desktop configuration:
 
 ```json
 {
   "mcpServers": {
     "scholargraph": {
-      "command": "/absolute_path_to/scholargraph/.venv/bin/python",
+      "command": "/absolute/path/to/WebServices/.venv/bin/python",
       "args": [
-        "/absolute_path_to/scholargraph/mcp_server/server.py"
+        "/absolute/path/to/WebServices/mcp_server/server.py"
       ],
       "env": {
-        "SCHOLARGRAPH_API_KEY": "your_raw_API_KEY_here"
+        "SCHOLARGRAPH_API_KEY": "your-raw-api-key"
       }
     }
-  },
+  }
 }
-```
-
-### MCP Flow Summary
-
-```text
-Claude Desktop / AI Host
-        │
-        ▼
-MCP Server (stdio process)
-        │ HTTP + API key
-        ▼
-ScholarGraph FastAPI API
-        │
-        ▼
-PostgreSQL + pgvector
 ```
 
 ---
 
 ## Running Tests
 
-The project includes automated tests covering the following areas:
+The pgvector test database is created automatically by Docker Compose and
+Codespaces.
 
-- **authentication flows** (`tests/test_auth.py`)
-- **papers endpoints and pagination** (`tests/test_papers.py`)
-- **analytics endpoints** (`tests/test_analytics.py`)
-- **configuration behaviour** (`tests/test_config.py`)
-- **users CRUD behaviour** (`tests/test_users_crud.py`)
+The test fixture:
 
-### Run all tests
+- enables pgvector;
+- creates ORM tables at session start;
+- clears tables between tests;
+- drops ORM tables after the suite;
+- refuses to target anything except `scholargraph_test`.
 
-```bash
-uv run pytest
-```
-
-### Run with coverage
+Run the complete suite:
 
 ```bash
-uv run pytest --cov=app --cov-report=term-missing
+make test
 ```
 
-### CI Workflow
+Run coverage:
 
-A GitHub Actions workflow runs tests automatically on push / pull request. The badge at the top of this README reflects the latest status.
+```bash
+make test-cov
+```
+
+Run linting:
+
+```bash
+make lint
+```
 
 ---
 
 ## Deployment Notes
 
-### Recommended Deployment Target
+### Render
 
-**Render** is a practical deployment target for this project.
+Render may supply a database URL beginning with:
 
-### PostgreSQL Setup
+```text
+postgresql://
+```
 
-After creating your Render PostgreSQL database, enable `pgvector`:
+ScholarGraph normalises that URL to:
+
+```text
+postgresql+asyncpg://
+```
+
+You may also explicitly configure:
+
+```text
+postgresql+asyncpg://
+```
+
+or:
+
+```text
+postgresql+psycopg://
+```
+
+Required production variables:
+
+```env
+DATABASE_URL=postgresql+asyncpg://<user>:<password>@<host>:5432/<database>
+SECRET_KEY=<long-random-production-secret>
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+ENVIRONMENT=production
+ALLOWED_ORIGINS=["https://your-scholargraph-domain.onrender.com"]
+```
+
+Enable pgvector in the Render database:
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS vector;
 ```
 
-### Important Render Environment Variables
-
-```env
-DATABASE_URL=postgresql+asyncpg://<user>:<password>@<host>:5432/<db>
-SECRET_KEY=<your_secret>
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-ENVIRONMENT=production
-ALLOWED_ORIGINS=["https://scholargraph.onrender.com"]
-```
-
-### Important Deployment Notes
-
-- `DATABASE_URL` must use **`postgresql+asyncpg://`**
-- `ALLOWED_ORIGINS` should be a **JSON array string**
-- if using Docker, Uvicorn should bind to **`$PORT`**
-- if the app crashes before Uvicorn starts, Render may report **“No open ports detected”** even though the real issue is earlier in startup
+The production container runs migrations automatically before starting
+Uvicorn.
 
 ---
 
-## Tech Stack with Justifications
+## Disk-Space Management
 
-| Technology | Why it was chosen |
+ScholarGraph uses CPU-only PyTorch by default.
+
+This prevents Linux environments from downloading several gigabytes of CUDA
+and NVIDIA libraries when no GPU is available.
+
+Codespaces also:
+
+- stores temporary uv files under `/tmp`;
+- installs with `--no-cache`;
+- deletes the temporary uv cache after setup;
+- excludes `.venv`, caches, models and test output from Git;
+- uses a persistent PostgreSQL Docker volume;
+- avoids installing PostgreSQL server binaries in the workspace container.
+
+Useful cleanup command:
+
+```bash
+make clean-cache
+```
+
+To completely recreate the local development databases:
+
+```bash
+make reset-db
+```
+
+This deletes the local Docker PostgreSQL volume and its data.
+
+---
+
+## Tech Stack
+
+| Technology | Purpose |
 |---|---|
-| **FastAPI** | Excellent for async APIs, automatic Swagger/OpenAPI generation, and clean dependency injection |
-| **Pydantic** | Strong validation for requests, responses, and configuration |
-| **SQLAlchemy (async)** | Clean ORM/query separation and robust async database access |
-| **Alembic** | Migration management for reproducible schema setup |
-| **PostgreSQL** | Reliable relational database for papers, authors, citations, users, and annotations |
-| **pgvector** | Enables semantic search directly inside PostgreSQL |
-| **asyncpg** | Fast async PostgreSQL driver suited to the app architecture |
-| **Sentence Transformers** | Provides abstract embeddings for semantic paper discovery |
-| **PageRank** | Adds meaningful citation-graph influence ranking based on module graph analytics concepts |
-| **arXiv API** | Provides the source corpus and paper metadata for crawling |
-| **Semantic Scholar API** | Provides citation and relationship data used to enrich graph-building workflows |
-| **GitHub Actions** | Automated testing and visible engineering discipline |
-| **MCP** | Allows AI assistants to use ScholarGraph as a tool-based backend |
-| **Render** | Straightforward deployment with managed PostgreSQL |
+| FastAPI | Async REST API and OpenAPI documentation |
+| Pydantic | Request, response and settings validation |
+| SQLAlchemy async | ORM and asynchronous database access |
+| Alembic | Database migrations |
+| PostgreSQL | Relational persistence |
+| pgvector | Vector similarity search |
+| asyncpg | Default async PostgreSQL driver |
+| Psycopg 3 | Optional PostgreSQL-driver compatibility |
+| Sentence Transformers | Abstract embeddings |
+| CPU-only PyTorch | Model inference without CUDA dependencies |
+| APScheduler | Background jobs |
+| JWT | Authentication |
+| arXiv API | Paper metadata |
+| Semantic Scholar API | Citation enrichment |
+| MCP | AI tool integration |
+| GitHub Actions | Automated linting and tests |
+| Docker Compose | Automatic development infrastructure |
+| Render | Production deployment |
 
 ---
 
