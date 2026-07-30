@@ -28,13 +28,18 @@ migrate:
 	uv run alembic upgrade head
 
 dev: db-up migrate
-	uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+	bash scripts/dev.sh
 
 test: db-up
 	uv run pytest
 
 test-cov: db-up
-	uv run pytest --cov=app --cov=crud --cov=routers --cov=services --cov-report=term-missing
+	uv run pytest \
+		--cov=app \
+		--cov=crud \
+		--cov=routers \
+		--cov=services \
+		--cov-report=term-missing
 
 lint:
 	uv run ruff check .

@@ -8,18 +8,13 @@
 
   "service": "workspace",
   "workspaceFolder": "/workspaces/WebServices",
-
   "shutdownAction": "stopCompose",
-
-  "forwardPorts": [
-    8000
-  ],
 
   "portsAttributes": {
     "8000": {
       "label": "ScholarGraph API",
       "protocol": "http",
-      "onAutoForward": "notify"
+      "onAutoForward": "openBrowserOnce"
     },
     "5432": {
       "label": "PostgreSQL",
@@ -28,7 +23,7 @@
   },
 
   "otherPortsAttributes": {
-    "onAutoForward": "silent"
+    "onAutoForward": "ignore"
   },
 
   "postCreateCommand": "bash scripts/post-create.sh",
@@ -49,6 +44,11 @@
         "python.testing.pytestArgs": [
           "tests"
         ],
+
+        "remote.autoForwardPorts": true,
+        "remote.autoForwardPortsSource": "output",
+        "remote.restoreForwardedPorts": false,
+
         "editor.formatOnSave": true,
         "[python]": {
           "editor.defaultFormatter": "charliermarsh.ruff",
