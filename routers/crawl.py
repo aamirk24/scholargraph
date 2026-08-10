@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import logging
-import os
 
-from fastapi import APIRouter, BackgroundTasks, Request, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Request, Depends, status
 from pydantic import BaseModel, Field
 
 from app.database import AsyncSessionLocal
-from app.dependencies import get_current_active_user
+from app.dependencies import get_current_admin_user
 from app.limiter import limiter
 from models.user import User
 from services.crawler import build_graph_for_all, build_graph_for_topic, crawl_topic, seed_foundations
@@ -15,13 +14,6 @@ from services.crawler import build_graph_for_all, build_graph_for_topic, crawl_t
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-ADMIN_EMAILS = {
-    email.strip().lower()
-    for email in os.getenv("CRAWL_ADMIN_EMAILS", "your-email@example.com").split(",")
-    if email.strip()
-}
-
 
 class CrawlRequest(BaseModel):
     topic: str = Field(..., examples=["cs.AI"])
@@ -52,17 +44,6 @@ class BuildGraphAcceptedResponse(BaseModel):
 class BuildGraphAllAcceptedResponse(BaseModel):
     message: str
     force_refresh: bool
-
-
-async def get_current_admin_user(
-    current_user: User = Depends(get_current_active_user),
-) -> User:
-    if current_user.email.lower() not in ADMIN_EMAILS:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin privileges required",
-        )
-    return current_user
 
 
 def topic_to_query(topic: str) -> str:
@@ -172,7 +153,7 @@ async def start_seed_foundations(
     request: Request,
     background_tasks: BackgroundTasks,
     top_n: int = 150,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_admin_user),
 ) -> SeedFoundationsAcceptedResponse:
     """
     Identify the top-N most-cited papers missing from the corpus and crawl them.
@@ -209,7 +190,7 @@ async def start_build_graph(
     request: Request,
     graph_request: BuildGraphRequest,
     background_tasks: BackgroundTasks,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_admin_user),
 ) -> BuildGraphAcceptedResponse:
     """
     Build citation edges for papers in a single topic already in the DB.
@@ -239,7 +220,7 @@ async def start_build_graph_all(
     request: Request,
     background_tasks: BackgroundTasks,
     force_refresh: bool = False,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_admin_user),
 ) -> BuildGraphAllAcceptedResponse:
     """
     Build citation edges across the entire paper corpus in one pass.

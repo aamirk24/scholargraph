@@ -9,11 +9,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.config import get_settings
 from crud.users import get_user_by_id
 from models.user import APIKey, User
 from services.auth import decode_token, hash_api_key
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+settings = get_settings()
 
 
 async def get_current_user(
@@ -51,6 +53,18 @@ async def get_current_active_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Inactive user",
+        )
+    return current_user
+
+
+async def get_current_admin_user(
+    current_user: User = Depends(get_current_active_user),
+) -> User:
+    """Require an active user whose email is in the configured admin allowlist."""
+    if current_user.email.strip().lower() not in settings.admin_emails:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required",
         )
     return current_user
 

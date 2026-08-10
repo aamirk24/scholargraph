@@ -1,19 +1,18 @@
 from __future__ import annotations
 
 import logging
-import os
 
 from datetime import datetime
 from typing import Literal
 from sqlalchemy import asc
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request, status
 from pydantic import BaseModel
 from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import AsyncSessionLocal, get_db
-from app.dependencies import get_current_active_user
+from app.dependencies import get_current_admin_user
 from app.limiter import limiter
 from models.paper import Paper
 from models.user import User
@@ -24,16 +23,6 @@ from services.embeddings import embed_all_papers
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-ADMIN_EMAILS = {
-    email.strip().lower()
-    for email in os.getenv(
-        "PAGERANK_ADMIN_EMAILS",
-        os.getenv("CRAWL_ADMIN_EMAILS", "your-email@example.com"),
-    ).split(",")
-    if email.strip()
-}
-
 
 class PageRankAcceptedResponse(BaseModel):
     message: str
@@ -64,17 +53,6 @@ class TrendResponse(BaseModel):
 
 class EmbedPapersAcceptedResponse(BaseModel):
     message: str
-
-
-async def get_current_admin_user(
-    current_user: User = Depends(get_current_active_user),
-) -> User:
-    if current_user.email.lower() not in ADMIN_EMAILS:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin privileges required",
-        )
-    return current_user
 
 
 async def run_pagerank_job() -> None:

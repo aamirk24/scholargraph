@@ -1,20 +1,16 @@
 from __future__ import annotations
 
 import logging
-import os
-
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from app.config import get_settings
 from app.database import AsyncSessionLocal
 from services.crawler import build_graph_for_topic
 
 logger = logging.getLogger(__name__)
 
-GRAPH_REFRESH_TOPICS = [
-    topic.strip()
-    for topic in os.getenv("GRAPH_REFRESH_TOPICS", "cs.AI").split(",")
-    if topic.strip()
-]
+settings = get_settings()
+GRAPH_REFRESH_TOPICS = settings.graph_refresh_topics
 
 scheduler = AsyncIOScheduler(timezone="UTC")
 
@@ -46,6 +42,10 @@ async def nightly_graph_refresh() -> None:
 
 
 def start_scheduler() -> None:
+    if not settings.scheduler_enabled:
+        logger.info("APScheduler disabled by configuration")
+        return
+
     scheduler.add_job(
         nightly_graph_refresh,
         "cron",
@@ -59,5 +59,6 @@ def start_scheduler() -> None:
 
 
 def stop_scheduler() -> None:
-    scheduler.shutdown(wait=False)
-    logger.info("APScheduler stopped")
+    if scheduler.running:
+        scheduler.shutdown(wait=False)
+        logger.info("APScheduler stopped")
