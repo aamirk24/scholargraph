@@ -1,6 +1,6 @@
 # ScholarGraph
 
-![CI](https://github.com/aamirk24/WebServices/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/aamirk24/scholargraph/actions/workflows/ci.yml/badge.svg)
 
 An asynchronous research-intelligence API that combines semantic paper
 discovery, citation-graph analytics, authenticated annotations, and MCP tooling
@@ -228,8 +228,8 @@ Requirements:
 Clone the project:
 
 ```bash
-git clone https://github.com/aamirk24/WebServices.git
-cd WebServices
+git clone https://github.com/aamirk24/scholargraph.git
+cd scholargraph
 ```
 
 Create the local environment file:
@@ -449,9 +449,9 @@ Example Claude Desktop configuration:
 {
   "mcpServers": {
     "scholargraph": {
-      "command": "/absolute/path/to/WebServices/.venv/bin/python",
+      "command": "/absolute/path/to/scholargraph/.venv/bin/python",
       "args": [
-        "/absolute/path/to/WebServices/mcp_server/server.py"
+        "/absolute/path/to/scholargraph/mcp_server/server.py"
       ],
       "env": {
         "SCHOLARGRAPH_API_KEY": "your-raw-api-key"

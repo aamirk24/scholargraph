@@ -7,7 +7,7 @@
   ],
 
   "service": "workspace",
-  "workspaceFolder": "/workspaces/WebServices",
+  "workspaceFolder": "/workspaces/scholargraph",
   "shutdownAction": "stopCompose",
 
   "portsAttributes": {
@@ -38,7 +38,7 @@
         "eamodio.gitlens"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "/workspaces/WebServices/.venv/bin/python",
+        "python.defaultInterpreterPath": "/workspaces/scholargraph/.venv/bin/python",
         "python.terminal.activateEnvironment": true,
         "python.testing.pytestEnabled": true,
         "python.testing.pytestArgs": [
