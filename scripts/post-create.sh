@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd /workspaces/WebServices
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
 
 # Keep large temporary package archives off the workspace filesystem.
 export UV_CACHE_DIR="${UV_CACHE_DIR:-/tmp/uv-cache}"

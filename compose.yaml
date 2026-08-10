@@ -1,4 +1,4 @@
-name: webservices
+name: scholargraph
 
 services:
   db:

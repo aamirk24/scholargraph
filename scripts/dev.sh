@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd /workspaces/WebServices
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
 
 HEALTH_URL="http://127.0.0.1:8000/health"
 FORWARD_URL="http://localhost:8000/docs"

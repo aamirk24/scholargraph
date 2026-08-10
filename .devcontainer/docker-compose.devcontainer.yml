@@ -7,7 +7,7 @@ services:
     command: sleep infinity
 
     volumes:
-      - .:/workspaces/WebServices:cached
+      - .:/workspaces/scholargraph:cached
 
     depends_on:
       db:
