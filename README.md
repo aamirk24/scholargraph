@@ -286,6 +286,10 @@ cp .env.example .env
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | No | Access-token lifetime |
 | `ENVIRONMENT` | Recommended | `development`, `test`, or `production` |
 | `ALLOWED_ORIGINS` | Production | JSON array or comma-separated CORS origins |
+| `ADMIN_EMAILS` | Maintenance | Comma-separated allowlist for crawl, graph, embedding, and PageRank jobs |
+| `SCHEDULER_ENABLED` | No | Enables the in-process graph-refresh scheduler; defaults to `false` |
+| `GRAPH_REFRESH_TOPICS` | Scheduler | Comma-separated topics refreshed by the scheduler |
+| `SEMANTIC_SCHOLAR_API_KEY` | No | Optional upstream API key used for citation enrichment |
 | `SCHOLARGRAPH_API_KEY` | MCP only | API key used by the MCP server |
 
 Supported application database URL formats include:
@@ -309,7 +313,15 @@ SECRET_KEY=replace-with-a-long-random-secret
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ENVIRONMENT=development
+ALLOWED_ORIGINS=["http://localhost:8000","http://127.0.0.1:8000"]
+ADMIN_EMAILS=admin@example.com
+SCHEDULER_ENABLED=false
+GRAPH_REFRESH_TOPICS=cs.AI
 ```
+
+Every corpus-mutating or compute-heavy endpoint is restricted to users whose
+email appears in `ADMIN_EMAILS`. Restart the application after changing this
+allowlist because security settings are loaded at process startup.
 
 Never point `TEST_DATABASE_URL` at the development or production database. The
 test suite performs destructive table cleanup.
@@ -533,7 +545,14 @@ ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ENVIRONMENT=production
 ALLOWED_ORIGINS=["https://your-scholargraph-domain.onrender.com"]
+ADMIN_EMAILS=your-admin@example.com
+SCHEDULER_ENABLED=false
 ```
+
+Production startup rejects placeholder JWT secrets, wildcard credentialed
+CORS, an empty origin list, and an empty administrator allowlist. Enable the
+in-process scheduler on only one designated application process; otherwise
+each replica would run the same scheduled job.
 
 Enable pgvector in the Render database:
 
