@@ -2,13 +2,27 @@
 
 ![CI](https://github.com/aamirk24/WebServices/actions/workflows/ci.yml/badge.svg)
 
-[📄 API Documentation (PDF)](./API_Documentation.pdf)
+An asynchronous research-intelligence API that combines semantic paper
+discovery, citation-graph analytics, authenticated annotations, and MCP tooling
+over an arXiv-derived corpus.
+
+[Project overview](#project-overview) ·
+[Quick start](#quick-start) ·
+[API reference](#api-endpoints-reference) ·
+[📄 API documentation (PDF)](./API_Documentation.pdf)
+
+Built with FastAPI, PostgreSQL, pgvector, and sentence-transformers,
+ScholarGraph supports vector similarity search, PageRank ranking, author-impact
+analytics, and automated citation enrichment in a reproducible Docker-based
+development environment.
 
 ---
 
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [Demo](#demo)
+- [Engineering Highlights](#engineering-highlights)
 - [Architecture Diagram](#architecture-diagram)
 - [Quick Start](#quick-start)
 - [Environment Variables](#environment-variables)
@@ -17,8 +31,9 @@
 - [MCP Server Setup](#mcp-server-setup)
 - [Running Tests](#running-tests)
 - [Deployment Notes](#deployment-notes)
-- [Tech Stack with Justifications](#tech-stack-with-justifications)
+- [Tech Stack](#tech-stack)
 - [Author](#author)
+- [License](#license)
 
 ---
 
@@ -37,6 +52,39 @@ The system ingests and enriches research data from **arXiv** and
 **Semantic Scholar**. arXiv provides the paper corpus and metadata, while
 Semantic Scholar is used as a citation source for building and enriching the
 citation graph.
+
+## Demo
+
+The example below runs semantic search over embedded paper abstracts and
+returns the closest papers by pgvector cosine similarity.
+
+![ScholarGraph semantic-search demonstration](docs/assets/semantic-search-demo.gif)
+
+### API snapshots
+
+| API surface | Semantic search |
+|---|---|
+| ![ScholarGraph OpenAPI endpoint overview](docs/assets/swagger-overview.png) | ![Semantic paper-search response](docs/assets/semantic-search.png) |
+
+| PageRank results | Topic analytics |
+|---|---|
+| ![Papers ordered by normalized PageRank score](docs/assets/pagerank-results.png) | ![Paper counts and average PageRank by topic](docs/assets/topic-analytics.png) |
+
+## Engineering Highlights
+
+- **Hybrid research discovery:** combines structured metadata filters with
+  384-dimensional vector similarity search over paper abstracts.
+- **Graph-based relevance:** builds a citation network and computes PageRank to
+  surface influential papers beyond keyword matching.
+- **Asynchronous architecture:** uses FastAPI, async SQLAlchemy, and asyncpg for
+  non-blocking API and database operations.
+- **Reproducible development:** provides locked dependencies, Docker Compose,
+  pgvector, a devcontainer, migrations, and CI for Python 3.12.
+- **Safe integration testing:** isolates destructive database cleanup to a
+  dedicated `scholargraph_test` database and refuses to run against other
+  database names.
+- **AI-client integration:** exposes paper-discovery workflows through a
+  separate MCP server using revocable API keys.
 
 ### Core capabilities
 
@@ -496,6 +544,23 @@ CREATE EXTENSION IF NOT EXISTS vector;
 The production container runs migrations automatically before starting
 Uvicorn.
 
+#### Embedding resource requirements
+
+The current 512 MB Render deployment can serve the conventional API, but it
+does not have enough memory to run the sentence-transformers embedding job
+reliably. PyTorch model inference can exceed the instance limit and cause the
+service to restart.
+
+Run `POST /analytics/embed-papers` in the devcontainer, GitHub Codespaces, or
+another environment with at least 1 GB of available memory. The job commits
+after each batch and only selects papers whose `abstract_embedding` is `NULL`,
+so an interrupted run can be resumed safely.
+
+This is a resource limitation of the current deployment rather than a missing
+API feature. Semantic search and similar-paper discovery require generated
+embeddings; metadata retrieval, authentication, annotations, citation
+analytics, and PageRank do not.
+
 ---
 
 ## Disk-Space Management
@@ -557,5 +622,15 @@ This deletes the local Docker PostgreSQL volume and its data.
 
 ## Author
 
-**Aamir Khan**  
-University of Leeds
+**Aamir Khan** — University of Leeds
+
+[GitHub](https://github.com/aamirk24) ·
+[LinkedIn](https://www.linkedin.com/in/aamirkhan05/)
+
+---
+
+## License
+
+No open-source license has been selected for this repository. The source is
+available for portfolio review; reuse or redistribution is not granted unless
+a license is added later.

@@ -121,12 +121,6 @@ async def test_get_me_with_expired_token(async_client, test_user):
 
 @pytest.mark.asyncio
 async def test_refresh_token(async_client, test_user):
-    response = await async_client.post(
-        "/auth/refresh",
-        json={"refresh_token": test_user["token"] if False else None},
-    )
-
-    # Replace the placeholder request with the user's real refresh token by logging in again
     login_response = await async_client.post(
         "/auth/login",
         data={
