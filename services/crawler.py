@@ -11,7 +11,7 @@ from typing import Any
 
 import httpx
 import xmltodict
-from sqlalchemy import delete, or_, select
+from sqlalchemy import delete, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.author import Author, PaperAuthor
@@ -315,6 +315,13 @@ async def save_paper_to_db(
     Does NOT commit — caller controls the transaction.
     """
     arxiv_id: str = paper_dict["arxiv_id"]
+
+    # Crawls for overlapping topics can encounter the same paper concurrently.
+    # Serialize writes for that arXiv ID for the lifetime of this transaction.
+    await db.execute(
+        text("SELECT pg_advisory_xact_lock(hashtextextended(:arxiv_id, 0))"),
+        {"arxiv_id": arxiv_id},
+    )
 
     result = await db.execute(select(Paper).where(Paper.arxiv_id == arxiv_id))
     paper  = result.scalar_one_or_none()
