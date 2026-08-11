@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 ARXIV_API_URL = "https://export.arxiv.org/api/query"
+ARXIV_ID_LIST_CHUNK_SIZE = 25
 USER_AGENT = (
     "ScholarGraph/0.1 (COMP3011 academic project; "
     "contact: sc23a4k@leeds.ac.uk)"
@@ -100,6 +101,21 @@ class ArxivClient:
                 if attempt == max_attempts:
                     raise
                 delay = base_delay * (2 ** (attempt - 1))
+
+                if (
+                    isinstance(exc, httpx.HTTPStatusError)
+                    and exc.response.status_code == 429
+                ):
+                    retry_after = exc.response.headers.get("Retry-After")
+                    if retry_after:
+                        try:
+                            delay = max(delay, float(retry_after))
+                        except ValueError:
+                            logger.debug(
+                                "Ignoring non-numeric arXiv Retry-After header: %r",
+                                retry_after,
+                            )
+
                 logger.info("Retrying in %.0f seconds...", delay)
                 await asyncio.sleep(delay)
 
@@ -564,7 +580,9 @@ async def seed_foundations(
 
     seeded  = 0
     errors  = 0
-    chunk_size = 100  # arXiv id_list limit per request
+    # Smaller id_list requests proved more reliable than arXiv's maximum-sized
+    # requests, which repeatedly timed out or returned 429 during demo setup.
+    chunk_size = ARXIV_ID_LIST_CHUNK_SIZE
 
     async with ArxivClient() as client:
         for i in range(0, len(to_fetch), chunk_size):
