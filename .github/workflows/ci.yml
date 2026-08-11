@@ -60,6 +60,9 @@ jobs:
           print("CUDA available:", torch.cuda.is_available())
           PY
 
+      - name: Verify database migrations
+        run: uv run alembic upgrade head
+
       - name: Run lint
         run: uv run ruff check .
 
