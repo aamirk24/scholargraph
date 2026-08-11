@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -45,7 +45,6 @@ router = APIRouter()
     },
 )
 async def list_papers(
-    request: Request,
     category: str | None = Query(default=None),
     search: str | None = Query(default=None),
     page: int = Query(default=1, ge=1),
@@ -71,7 +70,7 @@ async def list_papers(
     items: list[PaperResponse] = []
     for paper in papers:
         item = PaperResponse.model_validate(paper)
-        item.links = build_links(paper.id, str(request.base_url))
+        item.links = build_links(paper.id)
         items.append(item)
 
     return PaperList(
@@ -91,7 +90,6 @@ async def list_papers(
     },
 )
 async def get_ranked_papers_endpoint(
-    request: Request,
     category: str | None = Query(default=None),
     limit: int = Query(default=20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -116,7 +114,7 @@ async def get_ranked_papers_endpoint(
             **base_item.model_dump(),
             rank=idx,
         )
-        item.links = build_links(paper.id, str(request.base_url))
+        item.links = build_links(paper.id)
         items.append(item)
 
     return RankedPaperList(
@@ -136,7 +134,6 @@ async def get_ranked_papers_endpoint(
     },
 )
 async def semantic_search_endpoint(
-    request: Request,
     params: SemanticSearchQueryParams = Depends(),
     db: AsyncSession = Depends(get_db),
 ) -> SemanticSearchPaperList:
@@ -167,7 +164,7 @@ async def semantic_search_endpoint(
             **base_item.model_dump(),
             similarity_score=similarity_score,
         )
-        item.links = build_links(paper.id, str(request.base_url))
+        item.links = build_links(paper.id)
         items.append(item)
 
     return SemanticSearchPaperList(
@@ -191,7 +188,6 @@ async def semantic_search_endpoint(
 )
 async def get_similar_papers_endpoint(
     paper_id: uuid.UUID,
-    request: Request,
     limit: int = Query(default=10, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ) -> SemanticSearchPaperList:
@@ -228,7 +224,7 @@ async def get_similar_papers_endpoint(
             **base_item.model_dump(),
             similarity_score=similarity_score,
         )
-        item.links = build_links(similar_paper.id, str(request.base_url))
+        item.links = build_links(similar_paper.id)
         items.append(item)
 
     return SemanticSearchPaperList(
@@ -251,7 +247,6 @@ async def get_similar_papers_endpoint(
 )
 async def get_paper_by_id(
     paper_id: uuid.UUID,
-    request: Request,
     db: AsyncSession = Depends(get_db),
 ) -> PaperResponse:
     paper = await get_paper(db=db, paper_id=paper_id)
@@ -263,7 +258,7 @@ async def get_paper_by_id(
         )
 
     response = PaperResponse.model_validate(paper)
-    response.links = build_links(paper.id, str(request.base_url))
+    response.links = build_links(paper.id)
     return response
 
 
@@ -278,7 +273,6 @@ async def get_paper_by_id(
 )
 async def get_paper_citations_endpoint(
     paper_id: uuid.UUID,
-    request: Request,
     page: int = Query(default=1, ge=1),
     size: int = Query(default=20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -307,7 +301,7 @@ async def get_paper_citations_endpoint(
             **base_item.model_dump(),
             direction="cited_by",
         )
-        item.links = build_links(cited_by_paper.id, str(request.base_url))
+        item.links = build_links(cited_by_paper.id)
         combined.append(item)
 
     for referenced_paper in outgoing:
@@ -316,7 +310,7 @@ async def get_paper_citations_endpoint(
             **base_item.model_dump(),
             direction="references",
         )
-        item.links = build_links(referenced_paper.id, str(request.base_url))
+        item.links = build_links(referenced_paper.id)
         combined.append(item)
 
     combined.sort(key=lambda item: (item.direction, item.title.lower()))

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -64,7 +64,6 @@ async def list_authors(
 )
 async def get_author_by_id(
     author_id: uuid.UUID,
-    request: Request,
     db: AsyncSession = Depends(get_db),
 ) -> AuthorDetailResponse:
     row = await get_author_with_stats(db, author_id)
@@ -81,7 +80,7 @@ async def get_author_by_id(
     paper_items: list[PaperResponse] = []
     for paper in papers:
         item = PaperResponse.model_validate(paper)
-        item.links = build_links(paper.id, str(request.base_url))
+        item.links = build_links(paper.id)
         paper_items.append(item)
 
     return AuthorDetailResponse(
@@ -104,7 +103,6 @@ async def get_author_by_id(
 )
 async def get_author_impact(
     author_id: uuid.UUID,
-    request: Request,
     db: AsyncSession = Depends(get_db),
 ) -> AuthorImpactResponse:
     """
@@ -130,7 +128,7 @@ async def get_author_impact(
     paper_items: list[PaperResponse] = []
     for paper in top_papers:
         item = PaperResponse.model_validate(paper)
-        item.links = build_links(paper.id, str(request.base_url))
+        item.links = build_links(paper.id)
         paper_items.append(item)
 
     return AuthorImpactResponse(

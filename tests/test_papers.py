@@ -87,10 +87,10 @@ async def test_get_paper_by_valid_id_has_links(async_client, test_paper):
     assert "authors" in links
     assert "similar" in links
 
-    assert links["self"]["href"].endswith(f"/papers/{test_paper.id}")
-    assert links["citations"]["href"].endswith(f"/papers/{test_paper.id}/citations")
-    assert links["authors"]["href"].endswith(f"/papers/{test_paper.id}/authors")
-    assert links["similar"]["href"].endswith(f"/papers/{test_paper.id}/similar")
+    assert links["self"]["href"] == f"/papers/{test_paper.id}"
+    assert links["citations"]["href"] == f"/papers/{test_paper.id}/citations"
+    assert links["authors"]["href"] == f"/papers/{test_paper.id}/authors"
+    assert links["similar"]["href"] == f"/papers/{test_paper.id}/similar"
 
 
 @pytest.mark.asyncio
