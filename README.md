@@ -7,6 +7,7 @@ discovery, citation-graph analytics, authenticated annotations, and MCP tooling
 over an arXiv-derived corpus.
 
 [Project overview](#project-overview) ·
+[Engineering case study](docs/engineering-case-study.md) ·
 [Quick start](#quick-start) ·
 [API reference](#api-endpoints-reference) ·
 [📄 API documentation (PDF)](./API_Documentation.pdf)
@@ -23,6 +24,7 @@ development environment.
 - [Project Overview](#project-overview)
 - [Demo](#demo)
 - [Engineering Highlights](#engineering-highlights)
+- [Engineering Case Study](docs/engineering-case-study.md)
 - [Architecture Diagram](#architecture-diagram)
 - [Quick Start](#quick-start)
 - [Environment Variables](#environment-variables)
