@@ -47,7 +47,7 @@ search.
 
 It combines traditional paper metadata retrieval, semantic search using vector
 embeddings, citation-graph analytics using PageRank, author impact summaries,
-user-authenticated annotations, API-key based tooling access, and MCP server
+user-authenticated annotations, API-key lifecycle management, and MCP server
 integration for AI-assisted workflows.
 
 The system ingests and enriches research data from **arXiv** and
@@ -85,8 +85,8 @@ returns the closest papers by pgvector cosine similarity.
 - **Safe integration testing:** isolates destructive database cleanup to a
   dedicated `scholargraph_test` database and refuses to run against other
   database names.
-- **AI-client integration:** exposes paper-discovery workflows through a
-  separate MCP server using revocable API keys.
+- **AI-client integration:** exposes the public paper-discovery workflows
+  through a separate MCP server.
 
 ### Core capabilities
 
@@ -125,7 +125,7 @@ returns the closest papers by pgvector cosine similarity.
 #### AI and Tool Integration
 
 - MCP server support
-- API-key based external tool access
+- MCP tools for semantic search, rankings, paper details and author impact
 - Natural-language paper-discovery workflows for AI clients
 
 ---
@@ -182,8 +182,8 @@ returns the closest papers by pgvector cosine similarity.
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-The optional MCP server runs as a separate process and calls the FastAPI API
-over HTTP using a ScholarGraph API key.
+The optional MCP server runs as a separate process and calls the FastAPI API's
+public paper and author read endpoints over HTTP.
 
 ---
 
@@ -292,7 +292,6 @@ cp .env.example .env
 | `SCHEDULER_ENABLED` | No | Enables the in-process graph-refresh scheduler; defaults to `false` |
 | `GRAPH_REFRESH_TOPICS` | Scheduler | Comma-separated topics refreshed by the scheduler |
 | `SEMANTIC_SCHOLAR_API_KEY` | No | Optional upstream API key used for citation enrichment |
-| `SCHOLARGRAPH_API_KEY` | MCP only | API key used by the MCP server |
 
 Supported application database URL formats include:
 
@@ -433,23 +432,9 @@ curl \
 
 ## MCP Server Setup
 
-Create an API key:
-
-```bash
-curl -X POST http://127.0.0.1:8000/auth/api-keys \
-  -H "Authorization: Bearer <ACCESS_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "mcp-client",
-    "scopes": ["papers:read", "analytics:read"]
-  }'
-```
-
-Store the key:
-
-```bash
-export SCHOLARGRAPH_API_KEY="your-raw-api-key"
-```
+Start the ScholarGraph API locally on port `8000`, then run the MCP adapter.
+It uses the API's public read endpoints and does not require separate
+credentials.
 
 Run the MCP server:
 
@@ -466,10 +451,7 @@ Example Claude Desktop configuration:
       "command": "/absolute/path/to/scholargraph/.venv/bin/python",
       "args": [
         "/absolute/path/to/scholargraph/mcp_server/server.py"
-      ],
-      "env": {
-        "SCHOLARGRAPH_API_KEY": "your-raw-api-key"
-      }
+      ]
     }
   }
 }
