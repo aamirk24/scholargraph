@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 import sys
 from typing import Any
 
@@ -12,10 +11,8 @@ from mcp.server import Server
 from mcp.server.stdio import stdio_server
 
 API_BASE_URL = "http://localhost:8000"
-API_KEY = os.environ["SCHOLARGRAPH_API_KEY"]
 
 HEADERS = {
-    "X-API-Key": API_KEY,
     "Accept": "application/json",
     "Content-Type": "application/json",
 }
@@ -62,13 +59,6 @@ def get_http_client() -> httpx.AsyncClient:
 async def api_get(path: str, params: dict[str, Any] | None = None) -> Any:
     client = get_http_client()
     response = await client.get(path, params=params)
-    response.raise_for_status()
-    return response.json()
-
-
-async def api_post(path: str, json_body: dict[str, Any] | None = None) -> Any:
-    client = get_http_client()
-    response = await client.post(path, json=json_body)
     response.raise_for_status()
     return response.json()
 
