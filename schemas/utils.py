@@ -25,14 +25,12 @@ class HalResponse(BaseModel):
 
 def build_links(
     paper_id: uuid.UUID | str,
-    base_url: str,
 ) -> dict[str, dict[str, str]]:
     pid = str(paper_id)
-    base = str(base_url).rstrip("/")
 
     return {
-        "self": {"href": f"{base}/papers/{pid}"},
-        "citations": {"href": f"{base}/papers/{pid}/citations"},
-        "authors": {"href": f"{base}/papers/{pid}/authors"},
-        "similar": {"href": f"{base}/papers/{pid}/similar"},
+        "self": {"href": f"/papers/{pid}"},
+        "citations": {"href": f"/papers/{pid}/citations"},
+        "authors": {"href": f"/papers/{pid}/authors"},
+        "similar": {"href": f"/papers/{pid}/similar"},
     }
